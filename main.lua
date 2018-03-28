@@ -31,7 +31,7 @@ local optionsbackgroundMusic =
 {
 	channel = 2
 }
-audio.setVolume ( 0.01, optionsbackgroundMusic)
+audio.setVolume ( 0.007, optionsbackgroundMusic)
 	backgroundMusicChannel = audio.play (backgroundMusic)
 
 
@@ -62,36 +62,43 @@ local pex = require "pony.com.ponywolf.pex"
 
 
 local questionObject
-
 local numericField
-
 local randomNumber1
-
 local randomNumber2
-
 local userAnswer
-
 local correctAnswer
+local totalSeconds = 10
+local secondsLeft = 10
+local clockText
+local countDownTimer
+local lives = 4
+
+
+
 
 
 local particle = pex.load("Images/particle.pex", "Images/texture.png")
 
 
+local heart4 = display.newEmitter(particle)
+	heart4.x = 400
+	heart4.y = 150
+	heart4.isVisible = true
+
 local heart1 = display.newEmitter(particle)
-	heart1.x = 400
+	heart1.x = 1300
 	heart1.y = 150
+	heart1.isVisible = true
 
 local heart2 = display.newEmitter(particle)
-	heart2.x = 1300
+	heart2.x = 1000
 	heart2.y = 150
+	heart2.isVisible = true
 
 local heart3 = display.newEmitter(particle)
-	heart3.x = 1000
+	heart3.x = 700
 	heart3.y = 150
-
-local heart4 = display.newEmitter(particle)
-	heart4.x = 700
-	heart4.y = 150
+	heart3.isVisible = true
 
 
 
@@ -112,13 +119,13 @@ local emitterparams = {
     startColorRed = 1,
     textureFileName = "Images/fire.png",
     startColorVarianceAlpha = 1,
-    maxParticles = 900,
-    finishParticleSize = 1600,
+    maxParticles = 450,
+    finishParticleSize = 500,
     duration = -1,
     finishColorRed = 1,
     maxRadiusVariance = 72.63,
     finishParticleSizeVariance = 64,
-    gravityy = -700,
+    gravityy = -200,
     speedVariance = 90.79,
     tangentialAccelVariance = -92.11,
     angleVariance = -142.62,
@@ -129,9 +136,9 @@ local emitterparams = {
 local firemitter = display.newEmitter(emitterparams)
  
 -- Center the emitter within the content area
-	firemitter.x = 500
-	firemitter.y = 500
-	firemitter.isVisible = false
+	firemitter.x = 813
+	firemitter.y = 1200
+	firemitter.isVisible = true
 
 local function AskQuestion()
 
@@ -140,33 +147,83 @@ local function AskQuestion()
 
 	correctAnswer = randomNumber1 + randomNumber2
 
-	questionObject.text = randomNumber1 .. " + " .. randomNumber2 .. " = "
+	questionObject.text = randomNumber1 .. " + " .. randomNumber2 .. " = " 
+
 end
 
 local function HideCorrect()
 	clicktext.isVisible = false
+
+	AskQuestion()
+
+end
+
+local function UpdateTime()
+
+	secondsLeft = secondsLeft -1
+
+	clockText.text = secondsLeft .. ""
+
+	if (secondsLeft == 0 ) then
+
+		secondsLeft = totalSeconds
+
+		lives = lives -1
+
+		if (lives == 3) then
+			heart4.isVisible = false
+		elseif (lives == 2) then
+			heart3.isVisible = false
+		elseif (lives == 1) then
+			heart2.isVisible = false
+		elseif (lives == 0) then
+			heart1.isVisible = false
+		end
+
+	end
+
+end
+
+local function StartTimer()
+	countDownTimer = timer.performWithDelay( 1000, UpdateTime, 0)
+end
+
+local function NumericFieldListener (event)
+	if (event.phase == "began") then
+
+		event.target.text = ""
+
+	elseif (event.phase == "submitted") then
+
+		userAnswer = tonumber(event.target.text)
+
+		if (userAnswer == correctAnswer) then
+
+			clicktext.isVisible = true
+
+			timer.performWithDelay(2000, HideCorrect)
+
+			event.target.text = ""
+
+		end
+
+	end
+
 end
 
 
 
 
+questionObject = display.newText( "", 200, 1200, "Images/vinet.ttf", 140)
+	questionObject:setTextColor(1, .2, 1)
 
-
-
-
-
-
-
-
-
+numericField = native.newTextField( 800, 1200, 200, 100)
+	numericField.inputType = "number"
+	numericField:addEventListener( "userInput", NumericFieldListener)
 
 
 -- event listeners 
-
-
-
-
-
+AskQuestion()
 
 
 
