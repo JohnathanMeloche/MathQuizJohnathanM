@@ -22,6 +22,33 @@ local optionsTing =
 }
 audio.setVolume ( 1, optionsTing)
 
+local correctSoundFile = audio.loadSound("Sounds/correct.mp3")
+local playCorrectSound
+local optionsCorrect = 
+{
+	channel = 3,
+	duration = 1000
+}
+audio.setVolume ( 1, "optionsCorrect" )
+local incorrectSoundFile = audio.loadSound("Sounds/incorrect.mp3")
+local playIncorrectSound
+local optionsIncorrect = 
+{
+	channel = 4,
+	duration = 1000
+}
+audio.setVolume ( 1, "optionsIncorrect" )
+local WinFile = audio.loadSound("Sounds/win.mp3")
+local playWin
+local optionsWin = 
+{
+	channel = 5,
+	duration = 50000
+}
+audio.setVolume ( 0.35, "optionsWin" )
+
+
+
 --loads background music file
 local backgroundMusic = audio.loadSound ("Sounds/Party.mp3")
 -- create channel for background music
@@ -31,7 +58,7 @@ local optionsbackgroundMusic =
 {
 	channel = 2
 }
-audio.setVolume ( 0.007, optionsbackgroundMusic)
+audio.setVolume ( 0.35, "optionsbackgroundMusic" )
 	backgroundMusicChannel = audio.play (backgroundMusic)
 
 
@@ -65,6 +92,8 @@ local incorrectText = display.newText("Incorrect!", 500, 500, "Images/vinet.ttf"
 	incorrectText:setFillColor(1, 0, 0)
 local questionObject
 local numericField
+local score = 0
+local scoreNumber = display.newText("Score:" .. score, 500, 750, "Images/vinet.ttf", 140)
 local randomNumber1
 local randomNumber2
 local randomNumber3
@@ -183,6 +212,11 @@ end
 
 local function HideCorrect()
 	clicktext.isVisible = false
+	AskQuestion()
+
+end
+
+local function HideIncorrect()
 	incorrectText.isVisible = false
 	AskQuestion()
 
@@ -211,12 +245,13 @@ local function UpdateTime()
 			AskQuestion()
 		elseif (lives == 0) then
 			heart1.isVisible = false
-			AskQuestion()
+			AskQuestion().
 		elseif (lives == -1) then
 			gameOver.isVisible = true
 			numericField.isVisible = false
 			questionObject.isVisible = false
 			firemitter.isVisible = false
+			scoreNumber.isVisible = false
 
 		end
 
@@ -244,6 +279,8 @@ local function NumericFieldListener (event)
 
 			clicktext.isVisible = true
 
+			playCorrectSound = audio.play(correctSoundFile)
+
 			timer.performWithDelay(2000, HideCorrect)
 
 			event.target.text = ""
@@ -258,11 +295,28 @@ local function NumericFieldListener (event)
 
 			event.target.text = ""
 
-			timer.performWithDelay(2000, HideCorrect)
+			playIncorrectSound = audio.play(incorrectSoundFile)
+
+			timer.performWithDelay(2000, HideIncorrect)
 
 			secondsLeft = 1
 
 		end
+
+	end
+
+end
+
+local function UpdateScore(event)
+
+	if (userAnswer == correctAnswer) then
+
+		score = score +1
+
+	end
+
+	if (score == 10) then
+		playWin = audio.play(WinFile)
 
 	end
 
@@ -282,6 +336,7 @@ numericField = native.newTextField( 800, 1200, 200, 100)
 -- event listeners 
 AskQuestion()
 StartTimer()
+UpdateScore()
 Runtime:addEventListener ("enterFrame", NumericFieldListener)
 
 
