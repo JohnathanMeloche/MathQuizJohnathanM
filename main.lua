@@ -54,25 +54,32 @@ local backgroundrect = display.newImageRect("Images/rectblue.jpg", 1950, 600)
 -- text that shows when redbutton has been clicked or touched
 local clicktext = display.newText("Correct!", 500, 500, "Images/vinet.ttf", 140)
 	clicktext.isVisible = false
-	clicktext:setFillColor(1, 0.2, 0)
+	clicktext:setFillColor(0, 1, 1)
 
 --local particles = require("particles")
 
 local pex = require "pony.com.ponywolf.pex"
 
-
+local incorrectText = display.newText("Incorrect!", 500, 500, "Images/vinet.ttf", 140)
+	incorrectText.isVisible = false
+	incorrectText:setFillColor(1, 0, 0)
 local questionObject
 local numericField
 local randomNumber1
 local randomNumber2
+local randomNumber3
+local tempNumber
 local userAnswer
 local correctAnswer
 local totalSeconds = 10
 local secondsLeft = 10
-local clockText
+local clockText = display.newText(secondsLeft, -250, 200, "Images/vinet.ttf", 140)
 local countDownTimer
 local lives = 4
-
+local gameOver = display.newImageRect("Images/gameOver.png", 1920, 1800)
+	gameOver.x = display.contentWidth/2
+	gameOver.y = display.contentWidth*2/3
+	gameOver.isVisible = false
 
 
 
@@ -99,7 +106,6 @@ local heart3 = display.newEmitter(particle)
 	heart3.x = 700
 	heart3.y = 150
 	heart3.isVisible = true
-
 
 
 -- sets emitter parameters
@@ -144,16 +150,40 @@ local function AskQuestion()
 
 	randomNumber1 = math.random(1, 15)
 	randomNumber2 = math.random(1, 15)
+	randomNumber3 = math.random(1, 4)
 
-	correctAnswer = randomNumber1 + randomNumber2
+	if (randomNumber2 > randomNumber1) then
 
-	questionObject.text = randomNumber1 .. " + " .. randomNumber2 .. " = " 
+		tempNumber = randomNumber1
+		randomNumber1 = randomNumber2
+		randomNumber2 = tempNumber
+	end
+
+	if (randomNumber3 == 1) then
+
+		correctAnswer = randomNumber1 + randomNumber2
+
+		questionObject.text = randomNumber1 .. " + " .. randomNumber2 .. " = " 
+
+	elseif (randomNumber3 == 2) then
+
+		correctAnswer = randomNumber1 * randomNumber2
+
+		questionObject.text = randomNumber1 .. " x " .. randomNumber2 .. " = " 
+
+	elseif (randomNumber3 == 3) then
+
+		correctAnswer = randomNumber1 - randomNumber2
+
+		questionObject.text = randomNumber1 .. " - " .. randomNumber2 .. " = " 
+
+	end
 
 end
 
 local function HideCorrect()
 	clicktext.isVisible = false
-
+	incorrectText.isVisible = false
 	AskQuestion()
 
 end
@@ -172,12 +202,22 @@ local function UpdateTime()
 
 		if (lives == 3) then
 			heart4.isVisible = false
+			AskQuestion()
 		elseif (lives == 2) then
 			heart3.isVisible = false
+			AskQuestion()
 		elseif (lives == 1) then
 			heart2.isVisible = false
+			AskQuestion()
 		elseif (lives == 0) then
 			heart1.isVisible = false
+			AskQuestion()
+		elseif (lives == -1) then
+			gameOver.isVisible = true
+			numericField.isVisible = false
+			questionObject.isVisible = false
+			firemitter.isVisible = false
+
 		end
 
 	end
@@ -185,10 +225,13 @@ local function UpdateTime()
 end
 
 local function StartTimer()
+
 	countDownTimer = timer.performWithDelay( 1000, UpdateTime, 0)
+
 end
 
 local function NumericFieldListener (event)
+
 	if (event.phase == "began") then
 
 		event.target.text = ""
@@ -204,6 +247,20 @@ local function NumericFieldListener (event)
 			timer.performWithDelay(2000, HideCorrect)
 
 			event.target.text = ""
+
+			secondsLeft = totalSeconds
+
+		end
+
+		if (userAnswer ~= correctAnswer) then
+
+			incorrectText.isVisible = true
+
+			event.target.text = ""
+
+			timer.performWithDelay(2000, HideCorrect)
+
+			secondsLeft = 1
 
 		end
 
@@ -224,6 +281,7 @@ numericField = native.newTextField( 800, 1200, 200, 100)
 
 -- event listeners 
 AskQuestion()
-
+StartTimer()
+Runtime:addEventListener ("enterFrame", NumericFieldListener)
 
 
