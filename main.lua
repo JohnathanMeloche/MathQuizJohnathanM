@@ -87,13 +87,17 @@ local clicktext = display.newText("Correct!", 500, 500, "Images/vinet.ttf", 140)
 
 local pex = require "pony.com.ponywolf.pex"
 
+  -------------------
+--| Local Variables |
+  -------------------
+
 local incorrectText = display.newText("Incorrect!", 500, 500, "Images/vinet.ttf", 140)
 	incorrectText.isVisible = false
 	incorrectText:setFillColor(1, 0, 0)
 local questionObject
 local numericField
 local score = 0
-local scoreNumber = display.newText("Score:" .. score, 500, 750, "Images/vinet.ttf", 140)
+local scoreNumber = display.newText("Score: " .. score, 500, 750, "Images/vinet.ttf", 140)
 local randomNumber1
 local randomNumber2
 local randomNumber3
@@ -109,28 +113,34 @@ local gameOver = display.newImageRect("Images/gameOver.png", 1920, 1800)
 	gameOver.x = display.contentWidth/2
 	gameOver.y = display.contentWidth*2/3
 	gameOver.isVisible = false
+local winScreen = display.newImageRect("Images/winScreen.jpg", 1920, 1800)
+	winScreen.x = display.contentWidth/2
+	winScreen.y = display.contentWidth*2/3
+	winScreen.isVisible = false
 
 
-
-
+-- loads resources for heart emitters
 local particle = pex.load("Images/particle.pex", "Images/texture.png")
 
-
+-- Displays and sets positions for Heart4 Emitter
 local heart4 = display.newEmitter(particle)
 	heart4.x = 400
 	heart4.y = 150
 	heart4.isVisible = true
 
+-- Displays and sets positions for Heart1 Emitter
 local heart1 = display.newEmitter(particle)
 	heart1.x = 1300
 	heart1.y = 150
 	heart1.isVisible = true
 
+-- Displays and sets positions for Heart2 Emitter
 local heart2 = display.newEmitter(particle)
 	heart2.x = 1000
 	heart2.y = 150
 	heart2.isVisible = true
 
+-- Displays and sets positions for Heart3 Emitter
 local heart3 = display.newEmitter(particle)
 	heart3.x = 700
 	heart3.y = 150
@@ -175,6 +185,8 @@ local firemitter = display.newEmitter(emitterparams)
 	firemitter.y = 1200
 	firemitter.isVisible = true
 
+
+-- New function that sets random numbers, chooses type of math question and sets correct answer
 local function AskQuestion()
 
 	randomNumber1 = math.random(1, 15)
@@ -210,18 +222,21 @@ local function AskQuestion()
 
 end
 
+-- hides the correct text
 local function HideCorrect()
 	clicktext.isVisible = false
 	AskQuestion()
 
 end
 
+-- hides the incorrect text
 local function HideIncorrect()
 	incorrectText.isVisible = false
 	AskQuestion()
 
 end
 
+--updates the timer and checks lives
 local function UpdateTime()
 
 	secondsLeft = secondsLeft -1
@@ -236,16 +251,12 @@ local function UpdateTime()
 
 		if (lives == 3) then
 			heart4.isVisible = false
-			AskQuestion()
 		elseif (lives == 2) then
 			heart3.isVisible = false
-			AskQuestion()
 		elseif (lives == 1) then
 			heart2.isVisible = false
-			AskQuestion()
 		elseif (lives == 0) then
 			heart1.isVisible = false
-			AskQuestion().
 		elseif (lives == -1) then
 			gameOver.isVisible = true
 			numericField.isVisible = false
@@ -259,12 +270,14 @@ local function UpdateTime()
 
 end
 
+-- calls the UpdateTime function with a delay
 local function StartTimer()
 
 	countDownTimer = timer.performWithDelay( 1000, UpdateTime, 0)
 
 end
 
+-- sets the function for Numeric Field and does actions when answer is correct or incorrect
 local function NumericFieldListener (event)
 
 	if (event.phase == "began") then
@@ -279,13 +292,43 @@ local function NumericFieldListener (event)
 
 			clicktext.isVisible = true
 
-			playCorrectSound = audio.play(correctSoundFile)
+			score = score +1
 
-			timer.performWithDelay(2000, HideCorrect)
+			scoreNumber.text = "Score: " .. score
+
+			playCorrectSound = audio.play(correctSoundFile)
 
 			event.target.text = ""
 
 			secondsLeft = totalSeconds
+
+			timer.performWithDelay(1000, HideCorrect)
+
+			if (score == 1) then
+				
+				playWin = audio.play(WinFile)
+
+				winScreen.isVisible = true
+
+				numericField.isVisible = false
+
+				questionObject.isVisible = false
+
+				firemitter.isVisible = false
+
+				scoreNumber.isVisible = false
+
+				heart1.isVisible = false
+
+				heart2.isVisible = false
+
+				heart3.isVisible = false
+
+				heart4.isVisible = false
+
+				backgroundMusicChannel = audio.stop (backgroundMusic)
+
+			end
 
 		end
 
@@ -297,9 +340,9 @@ local function NumericFieldListener (event)
 
 			playIncorrectSound = audio.play(incorrectSoundFile)
 
-			timer.performWithDelay(2000, HideIncorrect)
-
 			secondsLeft = 1
+
+			timer.performWithDelay(1000, HideIncorrect)
 
 		end
 
@@ -307,27 +350,11 @@ local function NumericFieldListener (event)
 
 end
 
-local function UpdateScore(event)
-
-	if (userAnswer == correctAnswer) then
-
-		score = score +1
-
-	end
-
-	if (score == 10) then
-		playWin = audio.play(WinFile)
-
-	end
-
-end
-
-
-
-
+--displays the question
 questionObject = display.newText( "", 200, 1200, "Images/vinet.ttf", 140)
 	questionObject:setTextColor(1, .2, 1)
 
+--displays the box to answer the question
 numericField = native.newTextField( 800, 1200, 200, 100)
 	numericField.inputType = "number"
 	numericField:addEventListener( "userInput", NumericFieldListener)
@@ -336,7 +363,6 @@ numericField = native.newTextField( 800, 1200, 200, 100)
 -- event listeners 
 AskQuestion()
 StartTimer()
-UpdateScore()
 Runtime:addEventListener ("enterFrame", NumericFieldListener)
 
 
