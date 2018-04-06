@@ -304,7 +304,7 @@ local function NumericFieldListener (event)
 
 			timer.performWithDelay(1000, HideCorrect)
 
-			if (score == 1) then
+			if (score == 10) then
 				
 				playWin = audio.play(WinFile)
 
