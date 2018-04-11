@@ -308,6 +308,8 @@ local function NumericFieldListener (event)
 				
 				playWin = audio.play(WinFile)
 
+				backgroundMusicChannel = audio.stop(backgroundMusic)
+
 				winScreen.isVisible = true
 
 				numericField.isVisible = false
